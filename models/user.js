@@ -18,11 +18,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-  },
-  // отключим управление версиями
-  {
-    versionKey: false,
   }
+  // ,
+  // // отключим управление версиями
+  // {
+  //   versionKey: false,
+  // }
 );
 
 module.exports = mongoose.model("user", userSchema);
