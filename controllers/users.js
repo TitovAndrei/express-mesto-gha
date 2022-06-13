@@ -21,8 +21,8 @@ module.exports.getProfile = (req, res) => {
   User.findById(req.user._id)
     .then((user) => res.send(user))
     .catch((err) => {
-      const ERROR_CODE = 400;
-      if (err.name === "ValidationError") {
+      const ERROR_CODE = 404;
+      if (err.name === "NoteFoundsError") {
         return res.status(ERROR_CODE).send({
           message: "Пользователь по указанному _id не найден.",
         });
@@ -52,7 +52,11 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateProfile = (req, res) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    { runValidators: true }
+  )
     .then((user) => {
       res.send({ user });
     })
@@ -65,7 +69,7 @@ module.exports.updateProfile = (req, res) => {
         });
       } else if (err.name === "NoteFoundsError") {
         return res.status(ERROR_CODE_NOT_FOUND).send({
-          message: `Пользователь по указанному ${req.user._id} не найден.`,
+          message: "Пользователь по указанному _id не найден.",
         });
       } else {
         res.send({ message: "На сервере произошла ошибка" });
@@ -75,7 +79,11 @@ module.exports.updateProfile = (req, res) => {
 
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    { runValidators: true }
+  )
     .then((user) => {
       res.status(200).send(user);
     })
