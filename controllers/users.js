@@ -19,12 +19,12 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getProfile = (req, res) => {
   User.findById(req.user._id)
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send(user))
     .catch((err) => {
       const ERROR_CODE = 404;
       if (err.name === "NoteFoundsError") {
         return res.status(ERROR_CODE).send({
-          message: `Пользователь по указанному ${req.user._id} не найден.`,
+          message: "Пользователь по указанному _id не найден.",
         });
       } else {
         res.send({ message: "На сервере произошла ошибка" });
