@@ -4,7 +4,7 @@ const NoteFoundsError = require("../errors/NoteFoundsError");
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.send({ users }))
+    .then((users) => res.status(200).send({ users }))
     .catch((err) => {
       const ERROR_CODE = 400;
       if (err.name === "ValidationError") {
@@ -19,7 +19,7 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getProfile = (req, res) => {
   User.findById(req.user._id)
-    .then((user) => res.send(user))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       const ERROR_CODE = 404;
       if (err.name === "NoteFoundsError") {
@@ -34,9 +34,9 @@ module.exports.getProfile = (req, res) => {
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  User.create({ name, about, avatar }, { new: true})
     .then((user) => {
-      res.send({ user });
+      res.status(200).send({ user });
     })
     .catch((err) => {
       const ERROR_CODE = 400;
@@ -55,10 +55,10 @@ module.exports.updateProfile = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { runValidators: true }
+    { new: true},
   )
     .then((user) => {
-      res.send({ user });
+      res.status(200).send({ user });
     })
     .catch((err) => {
       const ERROR_CODE = 400;
@@ -82,7 +82,7 @@ module.exports.updateAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
-    { runValidators: true }
+    { new: true},
   )
     .then((user) => {
       res.status(200).send(user);
