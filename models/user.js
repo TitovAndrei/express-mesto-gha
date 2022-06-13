@@ -19,11 +19,6 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
   }
-  // ,
-  // // отключим управление версиями
-  // {
-  //   versionKey: false,
-  // }
 );
 
 module.exports = mongoose.model("user", userSchema);
