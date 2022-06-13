@@ -22,7 +22,7 @@ module.exports.getProfile = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       const ERROR_CODE = 400;
-      if (err.name === "NoteFoundsError") {
+      if (err.name === "ValidationError") {
         return res.status(ERROR_CODE).send({
           message: "Пользователь по указанному _id не найден.",
         });
