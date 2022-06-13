@@ -54,7 +54,8 @@ module.exports.updateProfile = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about })
     .then((user) => {
-      return res.send(req.body)})
+      res.send({ user });
+    })
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOT_FOUND = 404;
