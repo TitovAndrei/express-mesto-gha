@@ -58,7 +58,7 @@ module.exports.updateProfile = (req, res) => {
     { new: true},
   )
     .then((user) => {
-      res.status(200).send({name, about});
+      res.status(200).send({ user });
     })
     .catch((err) => {
       const ERROR_CODE = 400;
