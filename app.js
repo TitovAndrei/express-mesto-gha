@@ -30,8 +30,8 @@ app.use("/", usersRoutes);
 app.use("/", cardsRoutes);
 app.post("/users", createUser);
 app.post("/cards", createCard);
-app.use('*', (req, res, next) => {
-  new NoteFoundsError('Страница не найдена');
+app.patch('*', function (req, res) {
+ new NoteFoundsError('Страница не найдена');
 });
 
 
