@@ -22,7 +22,7 @@ module.exports.getProfile = (req, res) => {
   User.findById({ _id })
     .then((user) => {
       if (!user) {
-        res.status(400).send({
+        res.status(404).send({
           message: "Пользователь по указанному _id не найден.",
         });
       } else {
@@ -30,7 +30,7 @@ module.exports.getProfile = (req, res) => {
       }
     })
     .catch((err) => {
-      const ERROR_CODE = 404;
+      const ERROR_CODE = 400;
       if (err.name === "CastError") {
         return res.status(ERROR_CODE).send({
           message: "Переданы некорректные данные",
@@ -64,12 +64,12 @@ module.exports.updateProfile = (req, res) => {
     { new: true, runValidators: true }
   )
     .then((user) => {
-      res.status(201).send({ user });
+      res.status(201).send(user);
     })
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOT_FOUND = 404;
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         return res.status(ERROR_CODE).send({
           message: "Переданы некорректные данные при обновлении профиля.",
         });
@@ -87,7 +87,7 @@ module.exports.updateAvatar = (req, res) => {
   const { _id, avatar } = req.body;
   User.findByIdAndUpdate({ _id, avatar }, { new: true, runValidators: true })
     .then((user) => {
-      res.status(200).send(user);
+      res.status(201).send(user);
     })
     .catch((err) => {
       const ERROR_CODE = 400;
