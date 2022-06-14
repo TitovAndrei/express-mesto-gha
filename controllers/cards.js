@@ -1,5 +1,4 @@
 const Card = require("../models/card");
-const ValidationError = require("../errors/ValidationError");
 const NoteFoundsError = require("../errors/NoteFoundsError");
 
 module.exports.createCard = (req, res) => {
@@ -77,9 +76,14 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       const ERROR_CODE = 400;
+      const ERROR_CODE_NOTE_FOUND = 404;
       if (err.name === "NoteFoundsError") {
+        return res
+          .status(ERROR_CODE_NOTE_FOUND)
+          .send({ message: "Передан несуществующий _id карточки." });
+      } else if (err.name === "CastError") {
         return res.status(ERROR_CODE).send({
-          message: "Передан несуществующий _id карточки.",
+          message: "Переданы некорректные данные для постановки лайка.",
         });
       } else {
         res.send({ message: "На сервере произошла ошибка" });
@@ -103,9 +107,14 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       const ERROR_CODE = 400;
+      const ERROR_CODE_NOTE_FOUND = 404;
       if (err.name === "NoteFoundsError") {
+        return res
+          .status(ERROR_CODE_NOTE_FOUND)
+          .send({ message: "Передан несуществующий _id карточки." });
+      } else if (err.name === "CastError") {
         return res.status(ERROR_CODE).send({
-          message: "Передан несуществующий _id карточки.",
+          message: "Переданы некорректные данные для снятия лайка.",
         });
       } else {
         res.send({ message: "На сервере произошла ошибка" });

@@ -19,7 +19,13 @@ module.exports.getUsers = (req, res) => {
 module.exports.getProfile = (req, res) => {
   const { _id } = req.body;
   User.findById({ _id })
-    .then((user) => {res.status(200).send(user)})
+    .then((user) => {
+      if (!user) {
+        throw new NoteFoundsError();
+      } else {
+        res.status(200).send(user);
+      }
+    })
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOTE_FOUND = 404;
@@ -28,7 +34,9 @@ module.exports.getProfile = (req, res) => {
           message: "Пользователь по указанному _id не найден.",
         });
       } else {
-        res.status(ERROR_CODE_NOTE_FOUND).send({ message: "Переданы некорректные данные" });
+        res
+          .status(ERROR_CODE_NOTE_FOUND)
+          .send({ message: "Переданы некорректные данные" });
       }
     });
 };
@@ -56,7 +64,11 @@ module.exports.updateProfile = (req, res) => {
     { new: true, runValidators: true }
   )
     .then((user) => {
-      res.status(201).send(user);
+      if (!user) {
+        throw new NoteFoundsError();
+      } else {
+        res.status(201).send(user);
+      }
     })
     .catch((err) => {
       const ERROR_CODE = 400;
@@ -79,18 +91,22 @@ module.exports.updateAvatar = (req, res) => {
   const { _id, avatar } = req.body;
   User.findByIdAndUpdate({ _id, avatar }, { new: true, runValidators: true })
     .then((user) => {
-      res.status(201).send(user);
+      if (!user) {
+        throw new NoteFoundsError();
+      } else {
+        res.status(201).send(user);
+      }
     })
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOT_FOUND = 404;
       if (err.name === "ValidationError") {
         return res.status(ERROR_CODE).send({
-          message: "Переданы некорректные данные при обновлении профиля.",
+          message: "Переданы некорректные данные при обновлении аватара.",
         });
       } else if (err.name === "NoteFoundsError") {
         return res.status(ERROR_CODE_NOT_FOUND).send({
-          message: `Пользователь по указанному ${req.user._id} не найден.`,
+          message: `Пользователь по указанному _id не найден.`,
         });
       } else {
         res.send({ message: "На сервере произошла ошибка" });
