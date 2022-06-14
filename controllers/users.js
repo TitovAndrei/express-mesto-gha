@@ -1,5 +1,4 @@
 const User = require("../models/user");
-const ValidationError = require("../errors/ValidationError");
 const NoteFoundsError = require("../errors/NoteFoundsError");
 
 module.exports.getUsers = (req, res) => {
@@ -20,23 +19,16 @@ module.exports.getUsers = (req, res) => {
 module.exports.getProfile = (req, res) => {
   const { _id } = req.body;
   User.findById({ _id })
-    .then((user) => {
-      if (!user) {
-        res.status(404).send({
+    .then((user) => res.status(200).send(user))
+    .catch((err) => {
+      const ERROR_CODE = 400;
+      const ERROR_CODE_NOTE_FOUND = 404;
+      if (err.name === "NoteFoundsError") {
+        res.status(ERROR_CODE).send({
           message: "Пользователь по указанному _id не найден.",
         });
       } else {
-        res.status(200).send(user);
-      }
-    })
-    .catch((err) => {
-      const ERROR_CODE = 400;
-      if (err.name === "CastError") {
-        return res.status(ERROR_CODE).send({
-          message: "Переданы некорректные данные",
-        });
-      } else {
-        res.send({ message: "На сервере произошла ошибка" });
+        res.status(ERROR_CODE_NOTE_FOUND).send({ message: "Переданы некорректные данные" });
       }
     });
 };
@@ -64,7 +56,6 @@ module.exports.updateProfile = (req, res) => {
     { new: true, runValidators: true }
   )
     .then((user) => {
-      console.log(user)
       res.status(201).send(user);
     })
     .catch((err) => {

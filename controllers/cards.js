@@ -1,5 +1,4 @@
 const Card = require("../models/card");
-const ValidationError = require("../errors/ValidationError");
 const NoteFoundsError = require("../errors/NoteFoundsError");
 
 module.exports.createCard = (req, res) => {

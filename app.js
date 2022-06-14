@@ -5,6 +5,7 @@ const cardsRoutes = require("./routes/cards");
 const bodyParser = require("body-parser");
 const { createUser } = require("./controllers/users");
 const { createCard } = require("./controllers/cards");
+const NoteFoundsError = require("./errors/NoteFoundsError");
 
 const { PORT = 3000 } = process.env;
 
@@ -29,6 +30,10 @@ app.use("/", usersRoutes);
 app.use("/", cardsRoutes);
 app.post("/users", createUser);
 app.post("/cards", createCard);
+app.use('*', (req, res, next) => {
+  new NoteFoundsError('Страница не найдена');
+});
+
 
 app.listen(PORT, () => {
   console.log(`Огонь все фурычит на порте ${PORT}`);
