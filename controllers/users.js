@@ -18,8 +18,9 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getProfile = (req, res) => {
-  User.findById(req.user._id)
-    .then((user) => res.status(200).send({ user }))
+  const { _id } = req.body;
+  User.findById({ _id })
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       const ERROR_CODE = 404;
       if (err.name === "NoteFoundsError") {
@@ -49,8 +50,8 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateProfile = (req, res) => {
-  const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true } )
+  const { _id, name, about } = req.body;
+  User.findByIdAndUpdate({ _id, name, about }, { new: true, runValidators: true } )
     .then((user) => {
       res.status(201).send({ user });
     })
@@ -72,8 +73,8 @@ module.exports.updateProfile = (req, res) => {
 };
 
 module.exports.updateAvatar = (req, res) => {
-  const { avatar } = req.body;
-  User.findByIdAndUpdate( req.user._id, { avatar }, { new: true, runValidators: true } )
+  const { _id,  avatar } = req.body;
+  User.findByIdAndUpdate({_id, avatar }, { new: true, runValidators: true } )
     .then((user) => {
       res.status(200).send(user);
     })
