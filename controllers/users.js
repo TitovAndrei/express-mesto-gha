@@ -22,9 +22,10 @@ module.exports.getProfile = (req, res) => {
   User.findById({ _id })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      const ERROR_CODE = 404;
-      if (err.name === "NoteFoundsError") {
-        return res.status(ERROR_CODE).send({
+      console.log(err.name)
+      const ERROR_CODE_NOT_FOUND = 404;
+      if (err.name === "CastError") {
+        return res.status(ERROR_CODE_NOT_FOUND).send({
           message: "Пользователь по указанному _id не найден.",
         });
       } else {
