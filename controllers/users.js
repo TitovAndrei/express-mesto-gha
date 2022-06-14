@@ -34,10 +34,8 @@ module.exports.getProfile = (req, res) => {
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar }, {runValidators: true})
-    .then((user) => {
-      res.status(200).send({ user });
-    })
+  User.create({ name, about, avatar })
+    .then((user) => res.status(201).send(user))
     .catch((err) => {
       const ERROR_CODE = 400;
       if (err.name === "ValidationError") {
