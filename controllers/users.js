@@ -58,14 +58,14 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateProfile = (req, res) => {
-  const { name, about } = req.body;
+  const { _id, name, about } = req.body;
   User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
+    { _id, name, about },
     { new: true, runValidators: true }
   )
     .then((user) => {
-      res.status(200).send(user);
+      console.log(user)
+      res.status(201).send(user);
     })
     .catch((err) => {
       const ERROR_CODE = 400;
@@ -85,10 +85,10 @@ module.exports.updateProfile = (req, res) => {
 };
 
 module.exports.updateAvatar = (req, res) => {
-  const { avatar } = req.body;
-  User.findByIdAndUpdate( req.user._id, { avatar }, { new: true, runValidators: true })
+  const { _id, avatar } = req.body;
+  User.findByIdAndUpdate({ _id, avatar }, { new: true, runValidators: true })
     .then((user) => {
-      res.status(200).send(user);
+      res.status(201).send(user);
     })
     .catch((err) => {
       const ERROR_CODE = 400;
