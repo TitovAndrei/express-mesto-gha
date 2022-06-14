@@ -31,7 +31,7 @@ app.use("/", cardsRoutes);
 app.post("/users", createUser);
 app.post("/cards", createCard);
 app.patch("/404", (req, res, next) => {
-  next(new NotFoundError('Страница не найдена'));
+  next(new NoteFoundsError('Страница не найдена'));
 });
 
 
