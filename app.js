@@ -30,10 +30,11 @@ app.use("/", usersRoutes);
 app.use("/", cardsRoutes);
 app.post("/users", createUser);
 app.post("/cards", createCard);
-app.patch("/404", (req, res, next) => {
-  next(new NoteFoundsError('Страница не найдена'));
+app.patch("*", function(req, res){
+  res.status(404).send({
+    message: "Страницы не существует",
+  });
 });
-
 
 app.listen(PORT, () => {
   console.log(`Огонь все фурычит на порте ${PORT}`);
