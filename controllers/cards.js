@@ -53,22 +53,25 @@ module.exports.deleteCard = (req, res) => {
 module.exports.likeCard = (req, res) => {
   const { _id } = req.body;
   Card.findByIdAndUpdate(
-    // req.params.cardId,
     _id,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
   )
-    .then((card) => res.status(200).send({ card }))
+    .then((card) => {
+      if (!card) {
+        return res.status(404).send({
+          message: "Передан несуществующий _id карточки.",
+        });
+      } else {
+        res.status(200).send({ card });
+      }
+    })
     .catch((err) => {
+      console.log(err.name);
       const ERROR_CODE = 400;
-      const ERROR_CODE_NOT_FOUND = 404;
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         return res.status(ERROR_CODE).send({
           message: "Переданы некорректные данные для постановки/снятии лайка.",
-        });
-      } else if (err.name === "NoteFoundsError") {
-        return res.status(ERROR_CODE_NOT_FOUND).send({
-          message: "Передан несуществующий _id карточки.",
         });
       } else {
         res.send({ message: "На сервере произошла ошибка" });
@@ -84,7 +87,15 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true }
   )
-    .then((card) => res.status(200).send({ card }))
+  .then((card) => {
+    if (!card) {
+      return res.status(404).send({
+        message: "Передан несуществующий _id карточки.",
+      });
+    } else {
+      res.status(200).send({ card });
+    }
+  })
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOT_FOUND = 404;
