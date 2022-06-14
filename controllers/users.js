@@ -26,7 +26,7 @@ module.exports.getProfile = (req, res) => {
           message: "Пользователь по указанному _id не найден.",
         });
       } else {
-        res.status(200).send(user);
+        res.status(201).send(user);
       }
     })
     .catch((err) => {
