@@ -20,13 +20,20 @@ module.exports.getUsers = (req, res) => {
 module.exports.getProfile = (req, res) => {
   const { _id } = req.body;
   User.findById({ _id })
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      console.log(err.name)
-      const ERROR_CODE_NOT_FOUND = 404;
-      if (err.name === "CastError") {
-        return res.status(ERROR_CODE_NOT_FOUND).send({
+    .then((user) => {
+      if (!user) {
+        res.status(400).send({
           message: "Пользователь по указанному _id не найден.",
+        });
+      } else {
+        res.status(200).send(user);
+      }
+    })
+    .catch((err) => {
+      const ERROR_CODE = 404;
+      if (err.name === "CastError") {
+        return res.status(ERROR_CODE).send({
+          message: "Переданы некорректные данные",
         });
       } else {
         res.send({ message: "На сервере произошла ошибка" });
@@ -52,7 +59,10 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateProfile = (req, res) => {
   const { _id, name, about } = req.body;
-  User.findByIdAndUpdate({ _id, name, about }, { new: true, runValidators: true } )
+  User.findByIdAndUpdate(
+    { _id, name, about },
+    { new: true, runValidators: true }
+  )
     .then((user) => {
       res.status(201).send({ user });
     })
@@ -74,8 +84,8 @@ module.exports.updateProfile = (req, res) => {
 };
 
 module.exports.updateAvatar = (req, res) => {
-  const { _id,  avatar } = req.body;
-  User.findByIdAndUpdate({_id, avatar }, { new: true, runValidators: true } )
+  const { _id, avatar } = req.body;
+  User.findByIdAndUpdate({ _id, avatar }, { new: true, runValidators: true })
     .then((user) => {
       res.status(200).send(user);
     })
