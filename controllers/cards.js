@@ -48,7 +48,9 @@ module.exports.deleteCard = (req, res) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOTE_FOUND = 404;
       if (err.name === "NoteFoundsError") {
-        return res.status(ERROR_CODE_NOTE_FOUND).send({ message: "Карточка с указанным _id не найдена." });
+        return res
+          .status(ERROR_CODE_NOTE_FOUND)
+          .send({ message: "Карточка с указанным _id не найдена." });
       } else if (err.name === "CastError") {
         return res.status(ERROR_CODE).send({
           message: "Переданы некорректные данные при elfktybb карточки.",

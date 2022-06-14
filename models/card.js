@@ -26,10 +26,6 @@ const cardSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-},
-// отключим управление версиями
-{
-  versionKey: false,
-});
+})
 
 module.exports = mongoose.model('card', cardSchema);
