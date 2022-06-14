@@ -36,13 +36,22 @@ module.exports.getCards = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   const { _id } = req.body;
-  Card.findByIdAndRemove({ _id })
-    .then(() => res.status(200).send({ message: "Карточка удалена" }))
+  Card.findByIdAndDelete({ _id })
+    .then((card) => {
+      if (!card) {
+        throw new NoteFoundsError();
+      } else {
+        res.status(200).send({ message: "Карточка удалена" });
+      }
+    })
     .catch((err) => {
       const ERROR_CODE = 400;
-      if (err.name === "ValidationError") {
+      const ERROR_CODE_NOTE_FOUND = 404;
+      if (err.name === "NoteFoundsError") {
+        return res.status(ERROR_CODE_NOTE_FOUND).send({ message: "Карточка с указанным _id не найдена." });
+      } else if (err.name === "CastError") {
         return res.status(ERROR_CODE).send({
-          message: "Карточка с указанным _id не найдена.",
+          message: "Переданы некорректные данные при elfktybb карточки.",
         });
       } else {
         res.send({ message: "На сервере произошла ошибка" });
@@ -59,9 +68,7 @@ module.exports.likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        throw new NoteFoundsError(
-          "Переданы некорректные данные для постановки/снятии лайка."
-        );
+        throw new NoteFoundsError();
       } else {
         res.status(201).send(card);
       }
@@ -87,9 +94,7 @@ module.exports.dislikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        throw new NoteFoundsError(
-          "Переданы некорректные данные для постановки/снятии лайка."
-        );
+        throw new NoteFoundsError();
       } else {
         res.status(200).send(card);
       }
