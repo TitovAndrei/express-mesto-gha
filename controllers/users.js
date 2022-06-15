@@ -59,16 +59,13 @@ module.exports.updateProfile = (req, res) => {
     { new: true, runValidators: true }
   )
     .then((user) => {
-      if (!user) {
-        throw new NoteFoundsError();
-      } else {
-        res.status(201).send(user);
-      }
+        res.status(200).send({user})
     })
     .catch((err) => {
+      console.log(err)
       const ERROR_CODE = 400;
       const ERROR_CODE_NOT_FOUND = 404;
-      if (err.name === "CastError") {
+      if (err._message === 'Validation failed') {
         return res.status(ERROR_CODE).send({
           message: "Переданы некорректные данные при обновлении профиля.",
         });
