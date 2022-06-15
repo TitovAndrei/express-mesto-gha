@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const NoteFoundsError = require("../errors/NoteFoundsError");
+const ValidationError = require("../errors/ValidationError");
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -26,7 +27,7 @@ module.exports.getProfile = (req, res) => {
   }
   User.findById(profileId())
     .orFail(() => {
-      throw new NoteFoundsError();
+      throw new ValidationError();
     })
     .then((user) => {
       res.status(200).send(user);
@@ -34,7 +35,7 @@ module.exports.getProfile = (req, res) => {
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOTE_FOUND = 404;
-      if (err.name === "NoteFoundsError") {
+      if (err.name === "ValidationError") {
         return res.status(ERROR_CODE).send({
           message: "Пользователь по указанному _id не найден.",
         });
