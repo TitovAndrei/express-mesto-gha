@@ -89,7 +89,7 @@ module.exports.updateAvatar = (req, res) => {
       if (!user) {
         throw new NoteFoundsError();
       } else {
-        res.status(200).send(res.avatar);
+        res.status(200).send({avatar});
       }
     })
     .catch((err) => {
