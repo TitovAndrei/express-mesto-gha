@@ -60,7 +60,7 @@ module.exports.updateProfile = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
-    { _id, name, about },
+    { name, about },
     { new: true, runValidators: true }
   )
     .then((user) => {
@@ -94,7 +94,7 @@ module.exports.updateAvatar = (req, res) => {
       if (!user) {
         throw new NoteFoundsError();
       } else {
-        res.status(201).send(user);
+        res.status(200).send(res.avatar);
       }
     })
     .catch((err) => {
