@@ -17,8 +17,7 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getProfile = (req, res) => {
-  const { _id } = req.body;
-  User.findById({ _id })
+   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         throw new NoteFoundsError();
@@ -58,8 +57,9 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateProfile = (req, res) => {
-  const { _id, name, about } = req.body;
+  const { name, about } = req.body;
   User.findByIdAndUpdate(
+    req.user._id,
     { _id, name, about },
     { new: true, runValidators: true }
   )
@@ -88,8 +88,8 @@ module.exports.updateProfile = (req, res) => {
 };
 
 module.exports.updateAvatar = (req, res) => {
-  const { _id, avatar } = req.body;
-  User.findByIdAndUpdate({ _id, avatar }, { new: true, runValidators: true })
+  const {  avatar } = req.body;
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         throw new NoteFoundsError();
