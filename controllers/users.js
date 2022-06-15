@@ -35,13 +35,13 @@ module.exports.getProfile = (req, res) => {
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOTE_FOUND = 404;
-      if (err.name === "ValidationError") {
-        return res.status(ERROR_CODE).send({
+      if (err.name !== "ValidationError") {
+        return res.status(ERROR_CODE_NOTE_FOUND).send({
           message: "Пользователь по указанному _id не найден.",
         });
       } else {
         res
-          .status(ERROR_CODE_NOTE_FOUND)
+          .status(ERROR_CODE)
           .send({ message: "Переданы некорректные данные" });
       }
     });
