@@ -33,7 +33,7 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-    Card.findByIdAndDelete(req.params._id)
+  Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
       if (!card) {
         throw new NoteFoundsError();
@@ -59,17 +59,17 @@ module.exports.deleteCard = (req, res) => {
 };
 
 module.exports.likeCard = (req, res) => {
-    Card.findByIdAndUpdate(
-      req.params._id,
+  Card.findByIdAndUpdate(
+    req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
   )
+    .orFail(() => {
+      throw new NoteFoundsError();
+    })
     .then((card) => {
-      if (!card) {
-        throw new NoteFoundsError();
-      } else {
-        res.status(201).send(card);
-      }
+      console.log(req.params)
+      res.status(201).send(card);
     })
     .catch((err) => {
       const ERROR_CODE = 400;
@@ -90,7 +90,7 @@ module.exports.likeCard = (req, res) => {
 
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
-    req.params._id,
+    req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true }
   )
