@@ -17,9 +17,20 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getProfile = (req, res) => {
-   User.findById(req.user._id)
-    .orFail(() => { throw new NoteFoundsError()})
-    .then((user) => {res.status(200).send(user)})
+  const profileId = () => {
+    if (req.params.userId !== ":userId") {
+      return  req.params.userId;
+    } else {
+      return  req.user._id;
+    }
+  }
+  User.findById(profileId())
+    .orFail(() => {
+      throw new NoteFoundsError();
+    })
+    .then((user) => {
+      res.status(200).send(user);
+    })
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOTE_FOUND = 404;
@@ -59,13 +70,13 @@ module.exports.updateProfile = (req, res) => {
     { new: true, runValidators: true }
   )
     .then((user) => {
-        res.status(200).send({user})
+      res.status(200).send({ user });
     })
     .catch((err) => {
-      console.log(err)
+      console.log(err);
       const ERROR_CODE = 400;
       const ERROR_CODE_NOT_FOUND = 404;
-      if (err._message === 'Validation failed') {
+      if (err._message === "Validation failed") {
         return res.status(ERROR_CODE).send({
           message: "Переданы некорректные данные при обновлении профиля.",
         });
@@ -80,13 +91,17 @@ module.exports.updateProfile = (req, res) => {
 };
 
 module.exports.updateAvatar = (req, res) => {
-  const {  avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+  const { avatar } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    { new: true, runValidators: true }
+  )
     .then((user) => {
       if (!user) {
         throw new NoteFoundsError();
       } else {
-        res.status(200).send({avatar});
+        res.status(200).send({ avatar });
       }
     })
     .catch((err) => {
