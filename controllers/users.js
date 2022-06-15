@@ -18,13 +18,8 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getProfile = (req, res) => {
    User.findById(req.user._id)
-    .then((user) => {
-      if (!user) {
-        throw new NoteFoundsError();
-      } else {
-        res.status(200).send(user);
-      }
-    })
+    .orFail(() => { throw new NoteFoundsError()})
+    .then((user) => {res.status(200).send(user)})
     .catch((err) => {
       const ERROR_CODE = 400;
       const ERROR_CODE_NOTE_FOUND = 404;

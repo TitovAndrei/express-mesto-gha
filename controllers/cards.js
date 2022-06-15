@@ -2,9 +2,8 @@ const Card = require("../models/card");
 const NoteFoundsError = require("../errors/NoteFoundsError");
 
 module.exports.createCard = (req, res) => {
-  const owner = req.user._id;
   const { name, link } = req.body;
-  Card.create({ name, link, owner })
+  Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(200).send({ body: card }))
     .catch((err) => {
       const ERROR_CODE = 400;
@@ -34,8 +33,7 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  const { _id } = req.body;
-  Card.findByIdAndDelete({ _id })
+    Card.findByIdAndDelete(req.params._id)
     .then((card) => {
       if (!card) {
         throw new NoteFoundsError();
@@ -61,9 +59,8 @@ module.exports.deleteCard = (req, res) => {
 };
 
 module.exports.likeCard = (req, res) => {
-  const { _id } = req.body;
-  Card.findByIdAndUpdate(
-    _id,
+    Card.findByIdAndUpdate(
+      req.params._id,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
   )
@@ -92,9 +89,8 @@ module.exports.likeCard = (req, res) => {
 };
 
 module.exports.dislikeCard = (req, res) => {
-  const { _id } = req.body;
   Card.findByIdAndUpdate(
-    _id,
+    req.params._id,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true }
   )
