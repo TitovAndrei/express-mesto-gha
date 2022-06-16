@@ -1,6 +1,6 @@
 const ERROR_CODE = 400;
 const ERROR_CODE_NOTE_FOUND = 404;
 
-export {
+module.exports = {
   ERROR_CODE, ERROR_CODE_NOTE_FOUND,
 };
