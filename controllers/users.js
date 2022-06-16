@@ -1,6 +1,6 @@
 const User = require('../models/user');
 const NoteFoundsError = require('../errors/NoteFoundsError');
-const { ERROR_CODE, ERROR_CODE_NOTE_FOUND } = require('../utils/constants');
+const { ERROR_CODE, ERROR_CODE_NOTE_FOUND, ERROR_CODE_DEFAULT } = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -11,7 +11,7 @@ module.exports.getUsers = (req, res) => {
           message: 'Переданы некорректные данные при создании пользователя.',
         });
       }
-      return res.send({ message: 'На сервере произошла ошибка' });
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -35,9 +35,14 @@ module.exports.getProfile = (req, res) => {
           message: 'Пользователь по указанному _id не найден.',
         });
       }
+      if (err.name === 'CastError') {
+        return res.status(ERROR_CODE).send({
+          message: 'Переданы некорректные данные',
+        });
+      }
       return res
-        .status(ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные' });
+        .status(ERROR_CODE_DEFAULT)
+        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -51,7 +56,7 @@ module.exports.createUser = (req, res) => {
           message: 'Переданы некорректные данные при создании пользователя.',
         });
       }
-      return res.send({ message: 'На сервере произошла ошибка' });
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -63,19 +68,23 @@ module.exports.updateProfile = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => {
-      res.status(200).send({ user });
+      if (!user) {
+        throw new NoteFoundsError();
+      } else {
+        res.status(200).send({ user });
+      }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные при обновлении профиля.',
         });
-      } if (err.name === 'NoteFoundsError') {
+      } if (err.name === 'CastError') {
         return res.status(ERROR_CODE_NOTE_FOUND).send({
           message: 'Пользователь по указанному _id не найден.',
         });
       }
-      return res.send({ message: 'На сервере произошла ошибка' });
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -98,11 +107,11 @@ module.exports.updateAvatar = (req, res) => {
         return res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные при обновлении аватара.',
         });
-      } if (err.name === 'NoteFoundsError') {
+      } if (err.name === 'CastError') {
         return res.status(ERROR_CODE_NOTE_FOUND).send({
           message: 'Пользователь по указанному id не найден.',
         });
       }
-      return res.send({ message: 'На сервере произошла ошибка' });
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
 };

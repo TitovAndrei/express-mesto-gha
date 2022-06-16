@@ -1,32 +1,25 @@
 const Card = require('../models/card');
 const NoteFoundsError = require('../errors/NoteFoundsError');
-const { ERROR_CODE, ERROR_CODE_NOTE_FOUND } = require('../utils/constants');
+const { ERROR_CODE, ERROR_CODE_NOTE_FOUND, ERROR_CODE_DEFAULT } = require('../utils/constants');
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.status(200).send({ body: card }))
+    .then((card) => res.status(201).send({ body: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные при создании карточки.',
         });
       }
-      return res.send({ message: 'На сервере произошла ошибка' });
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.status(200).send({ cards }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE).send({
-          message: 'Переданы некорректные данные при создании карточки.',
-        });
-      }
-      return res.send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(() => res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' }));
 };
 
 module.exports.deleteCard = (req, res) => {
@@ -48,7 +41,7 @@ module.exports.deleteCard = (req, res) => {
           message: 'Переданы некорректные данные при elfktybb карточки.',
         });
       }
-      return res.send({ message: 'На сервере произошла ошибка' });
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -62,7 +55,7 @@ module.exports.likeCard = (req, res) => {
       throw new NoteFoundsError();
     })
     .then((card) => {
-      res.status(201).send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'NoteFoundsError') {
@@ -74,7 +67,7 @@ module.exports.likeCard = (req, res) => {
           message: 'Переданы некорректные данные для постановки лайка.',
         });
       }
-      return res.send({ message: 'На сервере произошла ошибка' });
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -101,6 +94,6 @@ module.exports.dislikeCard = (req, res) => {
           message: 'Переданы некорректные данные для снятия лайка.',
         });
       }
-      return res.send({ message: 'На сервере произошла ошибка' });
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
 };
