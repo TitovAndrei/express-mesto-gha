@@ -1,29 +1,27 @@
-const User = require("../models/user");
-const NoteFoundsError = require("../errors/NoteFoundsError");
+const User = require('../models/user');
+const NoteFoundsError = require('../errors/NoteFoundsError');
+const { ERROR_CODE, ERROR_CODE_NOTE_FOUND } = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send({ users }))
     .catch((err) => {
-      const ERROR_CODE = 400;
-      if (err.name === "ValidationError") {
+      if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE).send({
-          message: "Переданы некорректные данные при создании пользователя.",
+          message: 'Переданы некорректные данные при создании пользователя.',
         });
-      } else {
-        res.send({ message: "На сервере произошла ошибка" });
       }
+      return res.send({ message: 'На сервере произошла ошибка' });
     });
 };
 
 module.exports.getProfile = (req, res) => {
   const profileId = () => {
-    if (req.params.userId !== ":userId") {
-      return  req.params.userId;
-    } else {
-      return  req.user._id;
+    if (req.params.userId !== ':userId') {
+      return req.params.userId;
     }
-  }
+    return req.user._id;
+  };
   User.findById(profileId())
     .orFail(() => {
       throw new NoteFoundsError();
@@ -32,18 +30,14 @@ module.exports.getProfile = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      console.log(err.name)
-      const ERROR_CODE = 400;
-      const ERROR_CODE_NOTE_FOUND = 404;
-      if (err.name === "NoteFoundsError") {
+      if (err.name === 'NoteFoundsError') {
         return res.status(ERROR_CODE_NOTE_FOUND).send({
-          message: "Пользователь по указанному _id не найден.",
+          message: 'Пользователь по указанному _id не найден.',
         });
-      } else {
-        res
-          .status(ERROR_CODE)
-          .send({ message: "Переданы некорректные данные" });
       }
+      return res
+        .status(ERROR_CODE)
+        .send({ message: 'Переданы некорректные данные' });
     });
 };
 
@@ -52,14 +46,12 @@ module.exports.createUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.status(201).send(user))
     .catch((err) => {
-      const ERROR_CODE = 400;
-      if (err.name === "ValidationError") {
+      if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE).send({
-          message: "Переданы некорректные данные при создании пользователя.",
+          message: 'Переданы некорректные данные при создании пользователя.',
         });
-      } else {
-        res.send({ message: "На сервере произошла ошибка" });
       }
+      return res.send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -68,26 +60,22 @@ module.exports.updateProfile = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .then((user) => {
       res.status(200).send({ user });
     })
     .catch((err) => {
-      console.log(err);
-      const ERROR_CODE = 400;
-      const ERROR_CODE_NOT_FOUND = 404;
-      if (err._message === "Validation failed") {
-        return res.status(ERROR_CODE).send({
-          message: "Переданы некорректные данные при обновлении профиля.",
+      if (err.name === 'Validation failed') {
+        res.status(ERROR_CODE).send({
+          message: 'Переданы некорректные данные при обновлении профиля.',
         });
-      } else if (err.name === "NoteFoundsError") {
-        return res.status(ERROR_CODE_NOT_FOUND).send({
-          message: "Пользователь по указанному _id не найден.",
+      } if (err.name === 'NoteFoundsError') {
+        return res.status(ERROR_CODE_NOTE_FOUND).send({
+          message: 'Пользователь по указанному _id не найден.',
         });
-      } else {
-        res.send({ message: "На сервере произошла ошибка" });
       }
+      return res.send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -96,7 +84,7 @@ module.exports.updateAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
@@ -106,18 +94,15 @@ module.exports.updateAvatar = (req, res) => {
       }
     })
     .catch((err) => {
-      const ERROR_CODE = 400;
-      const ERROR_CODE_NOT_FOUND = 404;
-      if (err.name === "ValidationError") {
+      if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE).send({
-          message: "Переданы некорректные данные при обновлении аватара.",
+          message: 'Переданы некорректные данные при обновлении аватара.',
         });
-      } else if (err.name === "NoteFoundsError") {
-        return res.status(ERROR_CODE_NOT_FOUND).send({
-          message: `Пользователь по указанному _id не найден.`,
+      } if (err.name === 'NoteFoundsError') {
+        return res.status(ERROR_CODE_NOTE_FOUND).send({
+          message: 'Пользователь по указанному id не найден.',
         });
-      } else {
-        res.send({ message: "На сервере произошла ошибка" });
       }
+      return res.send({ message: 'На сервере произошла ошибка' });
     });
 };
