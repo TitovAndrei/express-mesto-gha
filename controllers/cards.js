@@ -1,6 +1,6 @@
 const Card = require('../models/card');
 const NoteFoundsError = require('../errors/NoteFoundsError');
-const { ERROR_CODE, ERROR_CODE_NOTE_FOUND, ERROR_CODE_DEFAULT } = require('../utils/constants');
+const { ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOTE_FOUND, ERROR_CODE_DEFAULT } = require('../utils/constants');
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
@@ -8,7 +8,7 @@ module.exports.createCard = (req, res) => {
     .then((card) => res.status(201).send({ body: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные при создании карточки.',
         });
       }
@@ -37,8 +37,8 @@ module.exports.deleteCard = (req, res) => {
           .status(ERROR_CODE_NOTE_FOUND)
           .send({ message: 'Карточка с указанным _id не найдена.' });
       } if (err.name === 'CastError') {
-        return res.status(ERROR_CODE).send({
-          message: 'Переданы некорректные данные при elfktybb карточки.',
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: 'Переданы некорректные данные при удалении карточки.',
         });
       }
       return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
@@ -63,7 +63,7 @@ module.exports.likeCard = (req, res) => {
           .status(ERROR_CODE_NOTE_FOUND)
           .send({ message: 'Передан несуществующий _id карточки.' });
       } if (err.name === 'CastError') {
-        return res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные для постановки лайка.',
         });
       }
@@ -90,7 +90,7 @@ module.exports.dislikeCard = (req, res) => {
           .status(ERROR_CODE_NOTE_FOUND)
           .send({ message: 'Передан несуществующий _id карточки.' });
       } if (err.name === 'CastError') {
-        return res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные для снятия лайка.',
         });
       }

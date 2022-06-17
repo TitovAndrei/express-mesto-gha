@@ -1,13 +1,13 @@
 const User = require('../models/user');
 const NoteFoundsError = require('../errors/NoteFoundsError');
-const { ERROR_CODE, ERROR_CODE_NOTE_FOUND, ERROR_CODE_DEFAULT } = require('../utils/constants');
+const { ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOTE_FOUND, ERROR_CODE_DEFAULT } = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send({ users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные при создании пользователя.',
         });
       }
@@ -36,7 +36,7 @@ module.exports.getProfile = (req, res) => {
         });
       }
       if (err.name === 'CastError') {
-        return res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные',
         });
       }
@@ -52,7 +52,7 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные при создании пользователя.',
         });
       }
@@ -76,10 +76,14 @@ module.exports.updateProfile = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({
+        res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные при обновлении профиля.',
         });
       } if (err.name === 'CastError') {
+        res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: 'Переданы некорректные данные при обновлении профиля.',
+        });
+      } if (err.name === 'NoteFoundsError') {
         return res.status(ERROR_CODE_NOTE_FOUND).send({
           message: 'Пользователь по указанному _id не найден.',
         });
@@ -99,17 +103,21 @@ module.exports.updateAvatar = (req, res) => {
       if (!user) {
         throw new NoteFoundsError();
       } else {
-        res.status(200).send({ avatar });
+        res.status(200).send(user);
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные при обновлении аватара.',
         });
       } if (err.name === 'CastError') {
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
+          message: 'Переданы некорректные данные при обновлении аватара.',
+        });
+      } if (err.name === 'NoteFoundsError') {
         return res.status(ERROR_CODE_NOTE_FOUND).send({
-          message: 'Пользователь по указанному id не найден.',
+          message: 'Пользователь по указанному _id не найден.',
         });
       }
       return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });

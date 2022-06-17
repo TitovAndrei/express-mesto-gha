@@ -3,8 +3,6 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
-const { createUser } = require('./controllers/users');
-const { createCard } = require('./controllers/cards');
 
 const { PORT = 3000 } = process.env;
 
@@ -27,8 +25,6 @@ app.use((req, res, next) => {
 
 app.use('/', usersRoutes);
 app.use('/', cardsRoutes);
-app.post('/users', createUser);
-app.post('/cards', createCard);
 app.use('*', (req, res) => {
   res.status(404).send({
     message: 'Страницы не существует',
