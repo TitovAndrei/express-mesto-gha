@@ -75,12 +75,8 @@ module.exports.updateProfile = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: 'Переданы некорректные данные при обновлении профиля.',
-        });
-      } if (err.name === 'CastError') {
-        res.status(ERROR_CODE_BAD_REQUEST).send({
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные при обновлении профиля.',
         });
       } if (err.name === 'NoteFoundsError') {
@@ -107,11 +103,7 @@ module.exports.updateAvatar = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: 'Переданы некорректные данные при обновлении аватара.',
-        });
-      } if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(ERROR_CODE_BAD_REQUEST).send({
           message: 'Переданы некорректные данные при обновлении аватара.',
         });
