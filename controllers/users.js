@@ -26,7 +26,7 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getMe = (req, res) => {
-  User.findById({ _id: '62b87c662ddaef799d9d3beb' })
+  User.find(req.user._id)
     .orFail(() => {
       throw new NoteFoundsError();
     })
