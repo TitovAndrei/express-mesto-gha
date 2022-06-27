@@ -1,6 +1,16 @@
+const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const NoteFoundsError = require('../errors/NoteFoundsError');
-const { ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOTE_FOUND, ERROR_CODE_DEFAULT } = require('../utils/constants');
+const { creatureToken } = require('../utils/jwt');
+const {
+  ERROR_CODE_BAD_REQUEST,
+  ERROR_CODE_NOTE_FOUND,
+  ERROR_CODE_DEFAULT,
+  ERROR_CODE_IS_FOUND,
+  MONGO_DUPLICATE_ERROR_CODE,
+  SALT_ROUNDS,
+  ERROR_CODE_BAD_PASSWORD,
+} = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -12,6 +22,26 @@ module.exports.getUsers = (req, res) => {
         });
       }
       return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
+    });
+};
+
+module.exports.getMe = (req, res) => {
+  User.findById({ _id: '62b87c662ddaef799d9d3beb' })
+    .orFail(() => {
+      throw new NoteFoundsError();
+    })
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'NoteFoundsError') {
+        return res.status(ERROR_CODE_NOTE_FOUND).send({
+          message: 'Пользователь по указанному _id не найден.',
+        });
+      }
+      return res
+        .status(ERROR_CODE_DEFAULT)
+        .send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -46,15 +76,22 @@ module.exports.getProfile = (req, res) => {
     });
 };
 
+// eslint-disable-next-line consistent-return
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+  if (!email || !password) {
+    return res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Не передан email или пароль' });
+  } bcrypt.hash(password, SALT_ROUNDS).then((hash) => User.create({
+    email, password: hash, name, about, avatar,
+  }))
     .then((user) => res.status(201).send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: 'Переданы некорректные данные при создании пользователя.',
-        });
+      if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
+        return res.status(ERROR_CODE_IS_FOUND).send({ message: 'Пользователь с этим email уже зарегистрирован в системе' });
+      } if (err.name === 'ValidationError') {
+        return res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя.' });
       }
       return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
@@ -111,6 +148,46 @@ module.exports.updateAvatar = (req, res) => {
         return res.status(ERROR_CODE_NOTE_FOUND).send({
           message: 'Пользователь по указанному _id не найден.',
         });
+      }
+      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw new NoteFoundsError();
+  }
+  User
+    .findOne({ email })
+    .then((user) => {
+      if (!user) {
+        throw new NoteFoundsError();
+      }
+      return Promise.all([
+        user,
+        bcrypt.compare(password, user.password),
+      ]);
+    })
+    .then(([user, isPasswordTrue]) => {
+      if (!isPasswordTrue) {
+        throw new NoteFoundsError();
+      }
+      const token = creatureToken({ email: user.email });
+      const payload = { token, id: user._id };
+      return payload;
+    })
+    .then((payload) => {
+      res
+        .cookie('jwt', payload.token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+        });
+      res.send({ _id: payload.id });
+    })
+    .catch((err) => {
+      if (err.name === NoteFoundsError) {
+        return res.status(ERROR_CODE_BAD_PASSWORD).send({ message: 'Не передан email или пароль' });
       }
       return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });

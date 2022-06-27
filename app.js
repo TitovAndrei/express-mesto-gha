@@ -3,6 +3,11 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
+const {
+  createUser,
+  login,
+} = require('./controllers/users');
+const { isAuthorizen } = require('./middlewares/auth');
 
 const { PORT = 3000 } = process.env;
 
@@ -17,20 +22,23 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '62a8a3447b5e82be1caa64fa', // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '62b87c662ddaef799d9d3beb',
   };
 
   next();
 });
 
-app.use('/', usersRoutes);
-app.use('/', cardsRoutes);
-app.use('*', (req, res) => {
+app.post('/signup', createUser);
+app.post('/signin', login);
+app.use('/users', isAuthorizen, usersRoutes);
+app.use('/cards', cardsRoutes);
+// eslint-disable-next-line no-unused-vars
+app.use((req, res, next) => {
   res.status(404).send({
     message: 'Страницы не существует',
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`Огонь все фурычит на порте ${PORT}`);
+  console.log(`Огонь! Все фурычит на порте ${PORT}`);
 });
