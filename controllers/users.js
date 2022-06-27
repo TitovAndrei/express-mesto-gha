@@ -26,7 +26,8 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getMe = (req, res) => {
-  User.find(req.user._id)
+  const { _id } = req.user._id;
+  User.findById({ _id })
     .orFail(() => {
       throw new NoteFoundsError();
     })
