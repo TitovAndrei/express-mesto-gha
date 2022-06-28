@@ -1,15 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const NoteFoundsError = require('./errors/NoteFoundsError');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
 const {
   createUser,
   login,
 } = require('./controllers/users');
-const { isAuthorizen } = require('./middlewares/auth');
+
+require('dotenv').config();
 
 const { PORT = 3000 } = process.env;
+
+const auth = require('./middlewares/auth');
 
 const app = express();
 
@@ -23,13 +27,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.post('/signup', createUser);
 app.post('/signin', login);
 
-app.use('/users', isAuthorizen, usersRoutes);
+app.use(auth);
+
+app.use('/users', usersRoutes);
 app.use('/cards', cardsRoutes);
 // eslint-disable-next-line no-unused-vars
 app.use((req, res, next) => {
-  res.status(404).send({
-    message: 'Страницы не существует',
-  });
+  next(new NoteFoundsError('Страницы не существует'));
 });
 
 app.listen(PORT, () => {

@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const NoteFoundsError = require('../errors/NoteFoundsError');
+const BadRequestError = require('../errors/BadRequestError');
 const { creatureToken } = require('../utils/jwt');
 const {
   ERROR_CODE_BAD_REQUEST,
@@ -9,7 +10,6 @@ const {
   ERROR_CODE_IS_FOUND,
   MONGO_DUPLICATE_ERROR_CODE,
   SALT_ROUNDS,
-  ERROR_CODE_BAD_PASSWORD,
 } = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
@@ -162,7 +162,7 @@ module.exports.login = (req, res) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new NoteFoundsError();
+        throw new BadRequestError();
       }
       return Promise.all([
         user,
@@ -171,7 +171,7 @@ module.exports.login = (req, res) => {
     })
     .then(([user, isPasswordTrue]) => {
       if (!isPasswordTrue) {
-        throw new NoteFoundsError();
+        throw new BadRequestError();
       }
       const token = creatureToken({ _id: user._id });
       res
@@ -180,11 +180,14 @@ module.exports.login = (req, res) => {
           httpOnly: true,
         })
         .status(200)
-        .send();
+        .send({ token });
     })
     .catch((err) => {
-      if (err.name === NoteFoundsError) {
-        return res.status(ERROR_CODE_BAD_PASSWORD).send({ message: 'Не передан email или пароль' });
+      if (err.name === 'NoteFoundsError') {
+        return res.status(ERROR_CODE_NOTE_FOUND).send({ message: 'Не передан email или пароль' });
+      }
+      if (err.name === 'BadRequestError' || err.name === 'CastError') {
+        return res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Передан неверный email или пароль' });
       }
       return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
     });
