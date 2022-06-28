@@ -26,15 +26,16 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getMe = (req, res) => {
-  const { _id } = req.user._id;
-  User.findById({ _id })
-    .orFail(() => {
-      throw new NoteFoundsError();
-    })
+  User
+    .findOne({ email: req.user.email })
     .then((user) => {
-      res.status(200).send(user);
+      if (!user) {
+        throw new NoteFoundsError();
+      }
+      res.status(200).send({ user });
     })
     .catch((err) => {
+      console.log(err.name);
       if (err.name === 'NoteFoundsError') {
         return res.status(ERROR_CODE_NOTE_FOUND).send({
           message: 'Пользователь по указанному _id не найден.',
@@ -99,6 +100,7 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateProfile = (req, res) => {
+  console.log(req.user._id);
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -159,8 +161,7 @@ module.exports.login = (req, res) => {
   if (!email || !password) {
     throw new NoteFoundsError();
   }
-  User
-    .findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         throw new NoteFoundsError();
@@ -174,17 +175,14 @@ module.exports.login = (req, res) => {
       if (!isPasswordTrue) {
         throw new NoteFoundsError();
       }
-      const token = creatureToken({ email: user.email });
-      const payload = { token, id: user._id };
-      return payload;
-    })
-    .then((payload) => {
+      const token = creatureToken({ _id: user._id });
       res
-        .cookie('jwt', payload.token, {
+        .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
           httpOnly: true,
-        });
-      res.send({ _id: payload.id });
+        })
+        .status(200)
+        .send();
     })
     .catch((err) => {
       if (err.name === NoteFoundsError) {
