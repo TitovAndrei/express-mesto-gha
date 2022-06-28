@@ -154,10 +154,11 @@ module.exports.updateAvatar = (req, res) => {
     });
 };
 
+// eslint-disable-next-line consistent-return
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    throw new NoteFoundsError();
+    return res.status(ERROR_CODE_NOTE_FOUND).send({ message: 'Не передан email или пароль' });
   }
   User.findOne({ email }).select('+password')
     .then((user) => {
