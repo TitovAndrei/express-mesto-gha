@@ -3,7 +3,7 @@ const { ERROR_CODE_BAD_AUTH, ERROR_CODE_DEFAULT } = require('../utils/constants'
 const AuthError = require('../errors/AuthError');
 
 // eslint-disable-next-line consistent-return
-module.exports = (req, res, next) => {
+const isAuthorizen = (req, res, next) => {
   const auth = req.headers.authorization;
   const token = auth.replace('Bearer ', '');
   try {
@@ -20,3 +20,5 @@ module.exports = (req, res, next) => {
     return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка, авторизуйтесь для доступа' });
   }
 };
+
+module.exports = { isAuthorizen };

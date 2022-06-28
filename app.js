@@ -1,13 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const auth = require('./middlewares/auth');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
 const {
   createUser,
   login,
 } = require('./controllers/users');
+const { isAuthorizen } = require('./middlewares/auth');
 
 const { PORT = 3000 } = process.env;
 
@@ -22,7 +22,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.post('/signup', createUser);
 app.post('/signin', login);
-app.use(auth);
+
+app.use(isAuthorizen);
 app.use('/users', usersRoutes);
 app.use('/cards', cardsRoutes);
 // eslint-disable-next-line no-unused-vars

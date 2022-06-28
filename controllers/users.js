@@ -27,7 +27,7 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getMe = (req, res) => {
   User
-    .findOne({ email: req.user.email })
+    .findById(req.user._id)
     .then((user) => {
       if (!user) {
         throw new NoteFoundsError();
@@ -35,7 +35,6 @@ module.exports.getMe = (req, res) => {
       res.status(200).send({ user });
     })
     .catch((err) => {
-      console.log(err.name);
       if (err.name === 'NoteFoundsError') {
         return res.status(ERROR_CODE_NOTE_FOUND).send({
           message: 'Пользователь по указанному _id не найден.',
@@ -100,7 +99,6 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateProfile = (req, res) => {
-  console.log(req.user._id);
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
