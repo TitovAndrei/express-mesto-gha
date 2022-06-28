@@ -23,8 +23,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.post('/signup', createUser);
 app.post('/signin', login);
 
-app.use(isAuthorizen);
-app.use('/users', usersRoutes);
+app.use('/users', isAuthorizen, usersRoutes);
 app.use('/cards', cardsRoutes);
 // eslint-disable-next-line no-unused-vars
 app.use((req, res, next) => {
