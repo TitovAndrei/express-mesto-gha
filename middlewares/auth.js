@@ -3,8 +3,11 @@ const { ERROR_CODE_BAD_AUTH } = require('../utils/constants');
 const AuthError = require('../errors/AuthError');
 
 // eslint-disable-next-line consistent-return
-const isAuthorizen = (req, res, next) => {
+module.exports = (req, res, next) => {
   const auth = req.headers.authorization;
+  if (!auth) {
+    throw new AuthError();
+  }
   const token = auth.replace('Bearer ', '');
   try {
     const payload = checkToken(token);
@@ -17,5 +20,3 @@ const isAuthorizen = (req, res, next) => {
     return res.status(ERROR_CODE_BAD_AUTH).send({ message: 'Авторизуйтесь для доступа' });
   }
 };
-
-module.exports = { isAuthorizen };
