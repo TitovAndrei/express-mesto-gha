@@ -2,11 +2,11 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const NoteFoundsError = require('../errors/NoteFoundsError');
 const BadRequestError = require('../errors/BadRequestError');
+const DuplicateErrorCode = require('../errors/DuplicateErrorCode');
 const { creatureToken } = require('../utils/jwt');
 const {
   ERROR_CODE_BAD_REQUEST,
   ERROR_CODE_DEFAULT,
-  ERROR_CODE_IS_FOUND,
   MONGO_DUPLICATE_ERROR_CODE,
   SALT_ROUNDS,
 } = require('../utils/constants');
@@ -65,9 +65,8 @@ module.exports.createUser = (req, res, next) => {
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
-        return res.status(ERROR_CODE_IS_FOUND).send({ message: 'Пользователь с этим email уже зарегистрирован в системе' });
+        next(new DuplicateErrorCode('Пользователь с этим email уже зарегистрирован в системе'));
       }
-      return next();
     });
 };
 
@@ -105,7 +104,6 @@ module.exports.updateAvatar = (req, res, next) => {
     .catch(next);
 };
 
-// eslint-disable-next-line consistent-return
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {

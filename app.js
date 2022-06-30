@@ -5,10 +5,8 @@ const { celebrate, Joi } = require('celebrate');
 const { errors } = require('celebrate');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
-const {
-  createUser,
-  login,
-} = require('./controllers/users');
+const { createUser, login } = require('./controllers/users');
+const { isUrlValid } = require('./utils/isUrlValid');
 
 require('dotenv').config();
 
@@ -42,6 +40,9 @@ app.post(
     body: Joi.object().keys({
       email: Joi.string().required().email(),
       password: Joi.string().required(),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string().custom(isUrlValid),
     }),
   }),
   login,
