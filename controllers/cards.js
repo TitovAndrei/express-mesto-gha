@@ -23,22 +23,40 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
         throw new NoteFoundsError();
+      }
+      if (req.user._id === card.owner.toString()) {
+        Card.findByIdAndDelete(req.params.cardId)
+          .then(() => {
+            res.status(200).send({ message: 'Карточка удалена' })
+              .catch((err) => {
+                if (err.name === 'NoteFoundsError') {
+                  return res
+                    .status(ERROR_CODE_NOTE_FOUND)
+                    .send({ message: 'Карточка с указанным _id не найдена.' });
+                } if (err.name === 'CastError') {
+                  return res.status(ERROR_CODE_BAD_REQUEST).send({
+                    message: 'Переданы некорректные данные при удалении карточки.',
+                  });
+                }
+                return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
+              });
+          });
       } else {
-        res.status(200).send({ message: 'Карточка удалена' });
+        throw new NoteFoundsError();
       }
     })
     .catch((err) => {
       if (err.name === 'NoteFoundsError') {
         return res
           .status(ERROR_CODE_NOTE_FOUND)
-          .send({ message: 'Карточка с указанным _id не найдена.' });
+          .send({ message: 'Карточка не содержит указанный идентификатор пользователя.' });
       } if (err.name === 'CastError') {
         return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: 'Переданы некорректные данные при удалении карточки.',
+          message: 'Переданы некорректные данные при проверке карточки',
         });
       }
       return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
