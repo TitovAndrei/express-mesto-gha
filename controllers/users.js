@@ -62,7 +62,14 @@ module.exports.createUser = (req, res, next) => {
   } bcrypt.hash(password, SALT_ROUNDS).then((hash) => User.create({
     email, password: hash, name, about, avatar,
   }))
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(201).send({
+      _id: user._id,
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+
+    }))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         next(new DuplicateErrorCode('Пользователь с этим email уже зарегистрирован в системе'));
@@ -107,7 +114,7 @@ module.exports.updateAvatar = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    throw new NoteFoundsError('Не передан email или пароль');
+    throw new BadRequestError('Передан неверный email или пароль');
   }
   User.findOne({ email }).select('+password')
     .then((user) => {

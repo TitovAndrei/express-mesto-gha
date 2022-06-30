@@ -32,6 +32,8 @@ module.exports.deleteCard = (req, res, next) => {
         throw new NoteFoundsError('Передан несуществующий _id карточки.');
       } if (req.user._id === card.owner.toString()) {
         cardRemove();
+      } else {
+        throw new NoteFoundsError('Карточка не содержит указанный идентификатор пользователя.');
       }
     })
     .catch(next);
