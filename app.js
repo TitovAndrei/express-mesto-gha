@@ -51,9 +51,12 @@ app.use(auth);
 app.use('/users', usersRoutes);
 app.use('/cards', cardsRoutes);
 // eslint-disable-next-line no-unused-vars
-app.use((req, res, next) => {
-  res.status(404).send({
-    message: 'Страницы не существует',
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({
+    message: statusCode === 500
+      ? 'На сервере произошла ошибка'
+      : message,
   });
 });
 

@@ -1,6 +1,5 @@
 const Card = require('../models/card');
 const NoteFoundsError = require('../errors/NoteFoundsError');
-const BadPasswordError = require('../errors/BadPasswordError');
 const {
   ERROR_CODE_BAD_REQUEST,
   ERROR_CODE_NOTE_FOUND,
@@ -29,34 +28,42 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
+  const cardRemove = () => {
+    Card.findByIdAndDelete(req.params.cardId)
+      .then((card) => {
+        if (!card) {
+          throw new NoteFoundsError();
+        }
+        res.status(200).send({ message: 'Карточка удалена' });
+      })
+      .catch((err) => {
+        if (err.name === 'NoteFoundsError') {
+          return res
+            .status(ERROR_CODE_NOTE_FOUND)
+            .send({ message: 'Карточка с указанным _id не найдена.' });
+        } if (err.name === 'CastError') {
+          return res.status(ERROR_CODE_BAD_REQUEST).send({
+            message: 'Переданы некорректные данные при удалении карточки.',
+          });
+        }
+        return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
+      });
+  };
+
   Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
         throw new NoteFoundsError();
-      }
-      if (req.user._id === card.owner.toString()) {
-        Card.findByIdAndDelete(req.params.cardId)
-          .then(() => {
-            res.status(200).send({ message: 'Карточка удалена' })
-              .catch((err) => {
-                if (err.name === 'NoteFoundsError') {
-                  return res
-                    .status(ERROR_CODE_NOTE_FOUND)
-                    .send({ message: 'Карточка с указанным _id не найдена.' });
-                } if (err.name === 'CastError') {
-                  return res.status(ERROR_CODE_BAD_REQUEST).send({
-                    message: 'Переданы некорректные данные при удалении карточки.',
-                  });
-                }
-                return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
-              });
-          });
-      } else {
-        throw new BadPasswordError();
+      } if (req.user._id === card.owner.toString()) {
+        cardRemove();
       }
     })
     .catch((err) => {
-      if (err.name === 'BadPasswordError') {
+      if (err.name === 'NoteFoundsError') {
+        return res
+          .status(ERROR_CODE_NOTE_FOUND)
+          .send({ message: 'Передан несуществующий _id карточки.' });
+      } if (err.name === 'BadPasswordError') {
         return res
           .status(ERROR_CODE_BAD_PASSWORD)
           .send({ message: 'Карточка не содержит указанный идентификатор пользователя.' });

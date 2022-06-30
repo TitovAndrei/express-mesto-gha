@@ -5,7 +5,6 @@ const BadRequestError = require('../errors/BadRequestError');
 const { creatureToken } = require('../utils/jwt');
 const {
   ERROR_CODE_BAD_REQUEST,
-  ERROR_CODE_NOTE_FOUND,
   ERROR_CODE_DEFAULT,
   ERROR_CODE_IS_FOUND,
   MONGO_DUPLICATE_ERROR_CODE,
@@ -25,28 +24,19 @@ module.exports.getUsers = (req, res) => {
     });
 };
 
-module.exports.getMe = (req, res) => {
+module.exports.getMe = (req, res, next) => {
   User
     .findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new NoteFoundsError();
+        throw new NoteFoundsError('Пользователь по указанному _id не найден.');
       }
       res.status(200).send({ user });
     })
-    .catch((err) => {
-      if (err.name === 'NoteFoundsError') {
-        return res.status(ERROR_CODE_NOTE_FOUND).send({
-          message: 'Пользователь по указанному _id не найден.',
-        });
-      }
-      return res
-        .status(ERROR_CODE_DEFAULT)
-        .send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
-module.exports.getProfile = (req, res) => {
+module.exports.getProfile = (req, res, next) => {
   const profileId = () => {
     if (req.params.userId !== ':userId') {
       return req.params.userId;
@@ -55,35 +45,20 @@ module.exports.getProfile = (req, res) => {
   };
   User.findById(profileId())
     .orFail(() => {
-      throw new NoteFoundsError();
+      throw new NoteFoundsError('Пользователь по указанному _id не найден.');
     })
     .then((user) => {
       res.status(200).send(user);
     })
-    .catch((err) => {
-      if (err.name === 'NoteFoundsError') {
-        return res.status(ERROR_CODE_NOTE_FOUND).send({
-          message: 'Пользователь по указанному _id не найден.',
-        });
-      }
-      if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: 'Переданы некорректные данные',
-        });
-      }
-      return res
-        .status(ERROR_CODE_DEFAULT)
-        .send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
-// eslint-disable-next-line consistent-return
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     email, password, name, about, avatar,
   } = req.body;
   if (!email || !password) {
-    return res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Не передан email или пароль' });
+    throw new BadRequestError('Не передан email или пароль');
   } bcrypt.hash(password, SALT_ROUNDS).then((hash) => User.create({
     email, password: hash, name, about, avatar,
   }))
@@ -91,14 +66,12 @@ module.exports.createUser = (req, res) => {
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         return res.status(ERROR_CODE_IS_FOUND).send({ message: 'Пользователь с этим email уже зарегистрирован в системе' });
-      } if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя.' });
       }
-      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
+      return next();
     });
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -107,26 +80,15 @@ module.exports.updateProfile = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        throw new NoteFoundsError();
+        throw new NoteFoundsError('Пользователь по указанному _id не найден.');
       } else {
         res.status(200).send({ user });
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: 'Переданы некорректные данные при обновлении профиля.',
-        });
-      } if (err.name === 'NoteFoundsError') {
-        return res.status(ERROR_CODE_NOTE_FOUND).send({
-          message: 'Пользователь по указанному _id не найден.',
-        });
-      }
-      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -135,35 +97,24 @@ module.exports.updateAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        throw new NoteFoundsError();
+        throw new NoteFoundsError('Пользователь по указанному _id не найден.');
       } else {
         res.status(200).send(user);
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: 'Переданы некорректные данные при обновлении аватара.',
-        });
-      } if (err.name === 'NoteFoundsError') {
-        return res.status(ERROR_CODE_NOTE_FOUND).send({
-          message: 'Пользователь по указанному _id не найден.',
-        });
-      }
-      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
 // eslint-disable-next-line consistent-return
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(ERROR_CODE_NOTE_FOUND).send({ message: 'Не передан email или пароль' });
+    throw new NoteFoundsError('Не передан email или пароль');
   }
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new BadRequestError();
+        throw new BadRequestError('Передан неверный email или пароль');
       }
       return Promise.all([
         user,
@@ -172,7 +123,7 @@ module.exports.login = (req, res) => {
     })
     .then(([user, isPasswordTrue]) => {
       if (!isPasswordTrue) {
-        throw new BadRequestError();
+        throw new BadRequestError('Передан неверный email или пароль');
       }
       const token = creatureToken({ _id: user._id });
       res
@@ -183,13 +134,5 @@ module.exports.login = (req, res) => {
         .status(200)
         .send({ token });
     })
-    .catch((err) => {
-      if (err.name === 'NoteFoundsError') {
-        return res.status(ERROR_CODE_NOTE_FOUND).send({ message: 'Не передан email или пароль' });
-      }
-      if (err.name === 'BadRequestError' || err.name === 'CastError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({ message: 'Передан неверный email или пароль' });
-      }
-      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
