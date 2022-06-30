@@ -6,23 +6,14 @@ const DuplicateErrorCode = require('../errors/DuplicateErrorCode');
 const AuthError = require('../errors/AuthError');
 const { creatureToken } = require('../utils/jwt');
 const {
-  ERROR_CODE_BAD_REQUEST,
-  ERROR_CODE_DEFAULT,
   MONGO_DUPLICATE_ERROR_CODE,
   SALT_ROUNDS,
 } = require('../utils/constants');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(200).send({ users }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_BAD_REQUEST).send({
-          message: 'Переданы некорректные данные при создании пользователя.',
-        });
-      }
-      return res.status(ERROR_CODE_DEFAULT).send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
 module.exports.getMe = (req, res, next) => {
