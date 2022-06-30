@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
 const {
@@ -50,6 +51,8 @@ app.use(auth);
 
 app.use('/users', usersRoutes);
 app.use('/cards', cardsRoutes);
+
+app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
@@ -57,6 +60,12 @@ app.use((err, req, res, next) => {
     message: statusCode === 500
       ? 'На сервере произошла ошибка'
       : message,
+  });
+});
+// eslint-disable-next-line no-unused-vars
+app.use((req, res, next) => {
+  res.status(404).send({
+    message: 'Страницы не существует',
   });
 });
 
