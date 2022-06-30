@@ -1,5 +1,6 @@
 const Card = require('../models/card');
 const NoteFoundsError = require('../errors/NoteFoundsError');
+const BadPasswordError = require('../errors/BadPasswordError');
 
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
@@ -33,7 +34,7 @@ module.exports.deleteCard = (req, res, next) => {
       } if (req.user._id === card.owner.toString()) {
         cardRemove();
       } else {
-        throw new NoteFoundsError('Карточка не содержит указанный идентификатор пользователя.');
+        throw new BadPasswordError('Карточка не содержит указанный идентификатор пользователя.');
       }
     })
     .catch(next);

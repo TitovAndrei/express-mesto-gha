@@ -3,6 +3,7 @@ const User = require('../models/user');
 const NoteFoundsError = require('../errors/NoteFoundsError');
 const BadRequestError = require('../errors/BadRequestError');
 const DuplicateErrorCode = require('../errors/DuplicateErrorCode');
+const AuthError = require('../errors/AuthError');
 const { creatureToken } = require('../utils/jwt');
 const {
   ERROR_CODE_BAD_REQUEST,
@@ -114,12 +115,12 @@ module.exports.updateAvatar = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    throw new BadRequestError('Передан неверный email или пароль');
+    throw new AuthError('Передан неверный email или пароль');
   }
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new BadRequestError('Передан неверный email или пароль');
+        throw new AuthError('Передан неверный email или пароль');
       }
       return Promise.all([
         user,
@@ -128,7 +129,7 @@ module.exports.login = (req, res, next) => {
     })
     .then(([user, isPasswordTrue]) => {
       if (!isPasswordTrue) {
-        throw new BadRequestError('Передан неверный email или пароль');
+        throw new AuthError('Передан неверный email или пароль');
       }
       const token = creatureToken({ _id: user._id });
       res
