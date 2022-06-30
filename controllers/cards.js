@@ -1,6 +1,12 @@
 const Card = require('../models/card');
 const NoteFoundsError = require('../errors/NoteFoundsError');
-const { ERROR_CODE_BAD_REQUEST, ERROR_CODE_NOTE_FOUND, ERROR_CODE_DEFAULT } = require('../utils/constants');
+const BadPasswordError = require('../errors/BadPasswordError');
+const {
+  ERROR_CODE_BAD_REQUEST,
+  ERROR_CODE_NOTE_FOUND,
+  ERROR_CODE_DEFAULT,
+  ERROR_CODE_BAD_PASSWORD,
+} = require('../utils/constants');
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
@@ -46,13 +52,13 @@ module.exports.deleteCard = (req, res) => {
               });
           });
       } else {
-        throw new NoteFoundsError();
+        throw new BadPasswordError();
       }
     })
     .catch((err) => {
-      if (err.name === 'NoteFoundsError') {
+      if (err.name === 'BadPasswordError') {
         return res
-          .status(ERROR_CODE_NOTE_FOUND)
+          .status(ERROR_CODE_BAD_PASSWORD)
           .send({ message: 'Карточка не содержит указанный идентификатор пользователя.' });
       } if (err.name === 'CastError') {
         return res.status(ERROR_CODE_BAD_REQUEST).send({
