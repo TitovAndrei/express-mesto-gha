@@ -1,8 +1,13 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
+    validate: {
+      validator: (email) => validator.isEmail(email),
+      message: 'Введенный Вами адрес электронной почты не соответствует необходимому формату.',
+    },
     required: true,
     unique: true,
   },
@@ -28,6 +33,10 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: false,
+    validate: {
+      validator: (link) => validator.isURL(link),
+      message: 'Введенная ссылка не соответствует необходимому формату.',
+    },
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
 });

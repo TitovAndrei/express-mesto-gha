@@ -8,14 +8,12 @@ module.exports = (req, res, next) => {
     throw new AuthError('Авторизуйтесь для доступа');
   }
   const token = auth.replace('Bearer ', '');
+  let payload;
   try {
-    const payload = checkToken(token);
-    if (!payload) {
-      throw new AuthError('Авторизуйтесь для доступа');
-    }
-    req.user = payload;
-    next();
+    payload = checkToken(token);
   } catch (err) {
-    return next();
+    return next(new AuthError('Авторизуйтесь для доступа'));
   }
+  req.user = payload;
+  next();
 };

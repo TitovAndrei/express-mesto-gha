@@ -4,6 +4,7 @@ const NoteFoundsError = require('../errors/NoteFoundsError');
 const BadRequestError = require('../errors/BadRequestError');
 const DuplicateErrorCode = require('../errors/DuplicateErrorCode');
 const AuthError = require('../errors/AuthError');
+const ValidationError = require('../errors/ValidationError');
 const { creatureToken } = require('../utils/jwt');
 const {
   MONGO_DUPLICATE_ERROR_CODE,
@@ -12,7 +13,7 @@ const {
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.status(200).send({ users }))
+    .then((users) => res.send({ users }))
     .catch(next);
 };
 
@@ -65,6 +66,10 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         next(new DuplicateErrorCode('Пользователь с этим email уже зарегистрирован в системе'));
+      } if (err.name === 'ValidationError') {
+        next(new ValidationError('Переданные некорректные данные'));
+      } else {
+        next(err);
       }
     });
 };
@@ -83,7 +88,13 @@ module.exports.updateProfile = (req, res, next) => {
         res.status(200).send({ user });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new ValidationError('Переданные некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -100,13 +111,19 @@ module.exports.updateAvatar = (req, res, next) => {
         res.status(200).send(user);
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new ValidationError('Переданные некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    throw new AuthError('Передан неверный email или пароль');
+    throw new ValidationError('Переданные некорректные данные');
   }
   User.findOne({ email }).select('+password')
     .then((user) => {
@@ -123,13 +140,7 @@ module.exports.login = (req, res, next) => {
         throw new AuthError('Передан неверный email или пароль');
       }
       const token = creatureToken({ _id: user._id });
-      res
-        .cookie('jwt', token, {
-          maxAge: 3600000 * 24 * 7,
-          httpOnly: true,
-        })
-        .status(200)
-        .send({ token });
+      res.status(200).send({ token });
     })
     .catch(next);
 };

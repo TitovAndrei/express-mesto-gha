@@ -7,6 +7,7 @@ const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const { isUrlValid } = require('./utils/isUrlValid');
+const NoteFoundsError = require('./errors/NoteFoundsError');
 
 require('dotenv').config();
 
@@ -53,8 +54,12 @@ app.use(auth);
 app.use('/users', usersRoutes);
 app.use('/cards', cardsRoutes);
 
+app.use((req, res, next) => {
+  next(new NoteFoundsError('Страницы не существует'));
+});
+
 app.use(errors());
-// eslint-disable-next-line no-unused-vars
+
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   res.status(statusCode).send({
@@ -62,12 +67,7 @@ app.use((err, req, res, next) => {
       ? 'На сервере произошла ошибка'
       : message,
   });
-});
-// eslint-disable-next-line no-unused-vars
-app.use((req, res, next) => {
-  res.status(404).send({
-    message: 'Страницы не существует',
-  });
+  next();
 });
 
 app.listen(PORT, () => {
