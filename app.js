@@ -15,7 +15,13 @@ require('dotenv').config();
 
 const options = {
   origin: {
-    origin: 'http://localhost:3000',
+    origin: [
+      'http://localhost:3000',
+      'https://mesto.andreiTitov.nomoredomains.sbs',
+      'https://praktikum.tk',
+      'http://praktikum.tk',
+      'localhost:3000',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
     optionsSuccessStatus: 204,
@@ -23,12 +29,13 @@ const options = {
   credentials: true,
 };
 
-const { PORT = 3001 } = process.env;
+const { PORT = 3000 } = process.env;
 
 const auth = require('./middlewares/auth');
 
 const app = express();
 
+app.use('*', cors(options));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -37,8 +44,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.use(requestLogger);
-
-app.use('*', cors(options));
 
 app.post(
   '/signup',
