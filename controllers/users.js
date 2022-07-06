@@ -13,7 +13,7 @@ const {
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send({ users }))
+    .then((users) => res.send(users))
     .catch(next);
 };
 
@@ -24,7 +24,7 @@ module.exports.getMe = (req, res, next) => {
       if (!user) {
         throw new NoteFoundsError('Пользователь по указанному _id не найден.');
       }
-      res.status(200).send({ user });
+      res.status(200).send(user);
     })
     .catch(next);
 };
@@ -61,7 +61,6 @@ module.exports.createUser = (req, res, next) => {
       about: user.about,
       avatar: user.avatar,
       email: user.email,
-
     }))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
@@ -85,7 +84,7 @@ module.exports.updateProfile = (req, res, next) => {
       if (!user) {
         throw new NoteFoundsError('Пользователь по указанному _id не найден.');
       } else {
-        res.status(200).send({ user });
+        res.status(200).send(user);
       }
     })
     .catch((err) => {

@@ -3,15 +3,27 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi } = require('celebrate');
 const { errors } = require('celebrate');
+const cors = require('cors');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const { isUrlValid } = require('./utils/isUrlValid');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NoteFoundsError = require('./errors/NoteFoundsError');
 
 require('dotenv').config();
 
-const { PORT = 3000 } = process.env;
+const options = {
+  origin: {
+    origin: 'http://localhost:3001',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  },
+  credentials: true,
+};
+
+const { PORT = 3001 } = process.env;
 
 const auth = require('./middlewares/auth');
 
@@ -23,6 +35,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
+
+app.use(requestLogger);
+
+app.use('*', cors(options));
 
 app.post(
   '/signup',
@@ -53,6 +69,8 @@ app.use(auth);
 
 app.use('/users', usersRoutes);
 app.use('/cards', cardsRoutes);
+
+app.use(errorLogger);
 
 app.use((req, res, next) => {
   next(new NoteFoundsError('Страницы не существует'));
