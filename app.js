@@ -102,3 +102,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Огонь! Все фурычит на порте ${PORT}`);
 });
+
+console.log(process.env.NODE_ENV);
